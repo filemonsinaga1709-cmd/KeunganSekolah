@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class SiswaController extends Controller
 {
+    // Helper method untuk get route prefix
+    private function getRoutePrefix()
+    {
+        return str_replace('_', '-', auth()->user()->role);
+    }
+
     public function index(Request $request)
     {
         $query = Siswa::query();
@@ -25,12 +31,14 @@ class SiswaController extends Controller
         $siswas = $query->latest()->paginate(10);
         $kelasList = Siswa::distinct()->pluck('kelas');
 
-        return view('admin.siswa.index', compact('siswas', 'kelasList'));
+        // Dynamic view path
+        return view('siswa.index', compact('siswas', 'kelasList'));
     }
 
     public function create()
     {
-        return view('admin.siswa.create');
+        // Dynamic view path
+        return view('siswa.create');
     }
 
     public function store(Request $request)
@@ -46,7 +54,8 @@ class SiswaController extends Controller
 
         Siswa::create($validated);
 
-        return redirect()->route('admin.siswa.index')
+        // Dynamic redirect
+        return redirect()->route($this->getRoutePrefix() . '.siswa.index')
             ->with('success', 'Data siswa berhasil ditambahkan');
     }
 
@@ -55,12 +64,14 @@ class SiswaController extends Controller
         $siswa->load(['pembayarans.jenisPembayaran']);
         $totalPembayaran = $siswa->pembayarans->sum('jumlah');
 
-        return view('admin.siswa.show', compact('siswa', 'totalPembayaran'));
+        // Dynamic view path
+        return view('siswa.show', compact('siswa', 'totalPembayaran'));
     }
 
     public function edit(Siswa $siswa)
     {
-        return view('admin.siswa.edit', compact('siswa'));
+        // Dynamic view path
+        return view('siswa.edit', compact('siswa'));
     }
 
     public function update(Request $request, Siswa $siswa)
@@ -76,18 +87,27 @@ class SiswaController extends Controller
 
         $siswa->update($validated);
 
-        return redirect()->route('admin.siswa.index')
+        // Dynamic redirect
+        return redirect()->route($this->getRoutePrefix() . '.siswa.index')
             ->with('success', 'Data siswa berhasil diperbarui');
     }
 
     public function destroy(Siswa $siswa)
     {
+        // Check authorization (extra security layer)
+        if (!auth()->user()->isAdmin() && !auth()->user()->isTu()) {
+            abort(403, 'Anda tidak memiliki akses untuk menghapus data siswa');
+        }
+
         try {
             $siswa->delete();
-            return redirect()->route('admin.siswa.index')
+            
+            // Dynamic redirect
+            return redirect()->route($this->getRoutePrefix() . '.siswa.index')
                 ->with('success', 'Data siswa berhasil dihapus');
         } catch (\Exception $e) {
-            return redirect()->route('admin.siswa.index')
+            // Dynamic redirect
+            return redirect()->route($this->getRoutePrefix() . '.siswa.index')
                 ->with('error', 'Data siswa tidak dapat dihapus karena memiliki riwayat pembayaran');
         }
     }
