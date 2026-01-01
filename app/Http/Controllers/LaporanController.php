@@ -14,7 +14,6 @@ class LaporanController extends Controller
 {
     public function index()
     {
-        // View laporan sama untuk semua role
         return view('laporan.index');
     }
 
@@ -36,7 +35,6 @@ class LaporanController extends Controller
             ->with(['jurnal'])
             ->get();
 
-        // Hitung saldo awal
         $saldoAwal = JurnalDetail::whereHas('jurnal', function($q) use ($request) {
                 $q->where('tanggal', '<', $request->tanggal_mulai);
             })
@@ -87,7 +85,6 @@ class LaporanController extends Controller
             'tanggal_akhir' => 'required|date|after_or_equal:tanggal_mulai',
         ]);
 
-        // Pendapatan
         $pendapatan = Akun::where('tipe_akun', 'pendapatan')
             ->with(['jurnalDetails' => function($q) use ($request) {
                 $q->whereHas('jurnal', function($q2) use ($request) {
@@ -102,7 +99,6 @@ class LaporanController extends Controller
                 ];
             });
 
-        // Beban
         $beban = Akun::where('tipe_akun', 'beban')
             ->with(['jurnalDetails' => function($q) use ($request) {
                 $q->whereHas('jurnal', function($q2) use ($request) {
@@ -155,4 +151,116 @@ class LaporanController extends Controller
             'saldoAkhir'
         ));
     }
+
+    // Print Laporan Kas
+    public function printLaporanKas(Request $request)
+    {
+        $request->validate([
+            'tanggal_mulai' => 'required|date',
+            'tanggal_akhir' => 'required|date|after_or_equal:tanggal_mulai',
+        ]);
+
+        $pembayarans = Pembayaran::whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir])
+            ->with(['siswa', 'jenisPembayaran'])
+            ->get();
+
+        $pemasukans = Pemasukan::whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir])
+            ->get();
+
+        $pengeluarans = Pengeluaran::whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir])
+            ->get();
+
+        $totalPemasukan = $pembayarans->sum('jumlah') + $pemasukans->sum('jumlah');
+        $totalPengeluaran = $pengeluarans->sum('jumlah');
+        $saldoAkhir = $totalPemasukan - $totalPengeluaran;
+
+        return view('laporan.print.kas', compact(
+            'pembayarans',
+            'pemasukans',
+            'pengeluarans',
+            'totalPemasukan',
+            'totalPengeluaran',
+            'saldoAkhir',
+            'request'
+        ));
+    }
+
+    // Print Laporan Laba Rugi
+    public function printLabaRugi(Request $request)
+    {
+        $request->validate([
+            'tanggal_mulai' => 'required|date',
+            'tanggal_akhir' => 'required|date|after_or_equal:tanggal_mulai',
+        ]);
+
+        $pendapatan = Akun::where('tipe_akun', 'pendapatan')
+            ->with(['jurnalDetails' => function($q) use ($request) {
+                $q->whereHas('jurnal', function($q2) use ($request) {
+                    $q2->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir]);
+                });
+            }])
+            ->get()
+            ->map(function($akun) {
+                return [
+                    'akun' => $akun,
+                    'total' => $akun->jurnalDetails->sum('kredit') - $akun->jurnalDetails->sum('debit'),
+                ];
+            });
+
+        $beban = Akun::where('tipe_akun', 'beban')
+            ->with(['jurnalDetails' => function($q) use ($request) {
+                $q->whereHas('jurnal', function($q2) use ($request) {
+                    $q2->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir]);
+                });
+            }])
+            ->get()
+            ->map(function($akun) {
+                return [
+                    'akun' => $akun,
+                    'total' => $akun->jurnalDetails->sum('debit') - $akun->jurnalDetails->sum('kredit'),
+                ];
+            });
+
+        $totalPendapatan = $pendapatan->sum('total');
+        $totalBeban = $beban->sum('total');
+        $labaRugi = $totalPendapatan - $totalBeban;
+
+        return view('laporan.print.laba-rugi', compact(
+            'pendapatan',
+            'beban',
+            'totalPendapatan',
+            'totalBeban',
+            'labaRugi',
+            'request'
+        ));
+    }
+
+    // Print Laporan Neraca Saldo
+public function printNeracaSaldo(Request $request)
+{
+    $request->validate([
+        'tanggal_akhir' => 'required|date',
+    ]);
+
+    $akuns = Akun::with(['jurnalDetails' => function($q) use ($request) {
+            $q->whereHas('jurnal', function($q2) use ($request) {
+                $q2->where('tanggal', '<=', $request->tanggal_akhir);
+            });
+        }])
+        ->get()
+        ->map(function($akun) {
+            $totalDebit = $akun->jurnalDetails->sum('debit');
+            $totalKredit = $akun->jurnalDetails->sum('kredit');
+            $saldo = $totalDebit - $totalKredit;
+
+            return [
+                'akun' => $akun,
+                'debit' => $totalDebit,
+                'kredit' => $totalKredit,
+                'saldo' => $saldo,
+            ];
+        });
+
+    return view('laporan.print.neraca-saldo', compact('akuns', 'request'));
+}
 }

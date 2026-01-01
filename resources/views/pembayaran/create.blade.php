@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Tambah Pembayaran</h2>
-            <a href="{{ route('admin.pembayaran.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition">
+            <a href="{{ route(auth()->user()->route_prefix . '.pembayaran.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -18,12 +18,12 @@
                     <h3 class="text-lg font-semibold text-white">Form Tambah Pembayaran</h3>
                 </div>
 
-                <form action="{{ route('admin.pembayaran.store') }}" method="POST" class="p-6 space-y-6">
+                <form action="{{ route(auth()->user()->route_prefix . '.pembayaran.store') }}" method="POST" class="p-6 space-y-6">
                     @csrf
 
                     <div>
                         <label for="siswa_id" class="block text-sm font-medium text-gray-700 mb-2">Siswa <span class="text-red-500">*</span></label>
-                        <select name="siswa_id" id="siswa_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('siswa_id') border-red-500 @enderror" required>
+                        <select name="siswa_id" id="siswa_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('siswa_id') border-red-500 @enderror select2-siswa" required>
                             <option value="">-- Pilih Siswa --</option>
                             @foreach($siswas as $siswa)
                                 <option value="{{ $siswa->id }}" {{ old('siswa_id') == $siswa->id ? 'selected' : '' }}>
@@ -36,7 +36,7 @@
 
                     <div>
                         <label for="jenis_pembayaran_id" class="block text-sm font-medium text-gray-700 mb-2">Jenis Pembayaran <span class="text-red-500">*</span></label>
-                        <select name="jenis_pembayaran_id" id="jenis_pembayaran_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenis_pembayaran_id') border-red-500 @enderror" required onchange="updateNominal(this)">
+                        <select name="jenis_pembayaran_id" id="jenis_pembayaran_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenis_pembayaran_id') border-red-500 @enderror select2-jenis" required onchange="updateNominal(this)">
                             <option value="">-- Pilih Jenis Pembayaran --</option>
                             @foreach($jenisPembayarans as $jenis)
                                 <option value="{{ $jenis->id }}" data-nominal="{{ $jenis->nominal }}" {{ old('jenis_pembayaran_id') == $jenis->id ? 'selected' : '' }}>
@@ -82,7 +82,7 @@
                     </div>
 
                     <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-                        <a href="{{ route('admin.pembayaran.index') }}" class="px-4 py-2 bg-white border border-gray-300 rounded-md text-xs text-gray-700 uppercase font-semibold hover:bg-gray-50 transition">Batal</a>
+                        <a href="{{ route(auth()->user()->route_prefix . '.pembayaran.index') }}" class="px-4 py-2 bg-white border border-gray-300 rounded-md text-xs text-gray-700 uppercase font-semibold hover:bg-gray-50 transition">Batal</a>
                         <button type="submit" class="px-6 py-2 bg-blue-600 border border-transparent rounded-md text-xs text-white uppercase font-semibold hover:bg-blue-700 transition">Simpan Pembayaran</button>
                     </div>
                 </form>
@@ -91,9 +91,77 @@
     </div>
 
     @push('scripts')
+    <style>
+        /* Custom Select2 styling */
+        .select2-container--default .select2-selection--single {
+            height: 42px;
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+        }
+        
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 28px;
+            color: #374151;
+        }
+        
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px;
+        }
+        
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #3b82f6;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .select2-dropdown {
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+        }
+        
+        .select2-search--dropdown .select2-search__field {
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 8px 12px;
+        }
+        
+        .select2-results__option--highlighted[aria-selected] {
+            background-color: #3b82f6 !important;
+        }
+    </style>
+    
     <script>
+        $(document).ready(function() {
+            // Initialize Select2 untuk Siswa dengan search
+            $('.select2-siswa').select2({
+                placeholder: '-- Cari Siswa (NIS, Nama, atau Kelas) --',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Siswa tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            // Initialize Select2 untuk Jenis Pembayaran
+            $('.select2-jenis').select2({
+                placeholder: '-- Pilih Jenis Pembayaran --',
+                allowClear: true,
+                width: '100%',
+                minimumResultsForSearch: 5 // Show search if more than 5 items
+            });
+        });
+
         function updateNominal(select) {
-            const nominal = select.options[select.selectedIndex].getAttribute('data-nominal');
+            const selectedOption = $(select).find(':selected');
+            const nominal = selectedOption.data('nominal');
+            
             if (nominal && nominal > 0) {
                 document.getElementById('jumlah').value = nominal;
             }

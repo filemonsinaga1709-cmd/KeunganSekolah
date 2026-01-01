@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\DB;
 
 class PembayaranController extends Controller
 {
+    // Helper method untuk get route prefix
+    private function getRoutePrefix()
+    {
+        return str_replace('_', '-', auth()->user()->role);
+    }
+
     public function index(Request $request)
     {
         $query = Pembayaran::with(['siswa', 'jenisPembayaran', 'user']);
@@ -33,7 +39,7 @@ class PembayaranController extends Controller
         $pembayarans = $query->latest('tanggal')->paginate(10);
         $totalPembayaran = $query->sum('jumlah');
 
-        return view('admin.pembayaran.index', compact('pembayarans', 'totalPembayaran'));
+        return view('pembayaran.index', compact('pembayarans', 'totalPembayaran'));
     }
 
     public function create()
@@ -41,7 +47,7 @@ class PembayaranController extends Controller
         $siswas = Siswa::active()->get();
         $jenisPembayarans = JenisPembayaran::all();
         
-        return view('admin.pembayaran.create', compact('siswas', 'jenisPembayarans'));
+        return view('pembayaran.create', compact('siswas', 'jenisPembayarans'));
     }
 
     public function store(Request $request)
@@ -65,7 +71,7 @@ class PembayaranController extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.pembayaran.index')
+            return redirect()->route($this->getRoutePrefix() . '.pembayaran.index')
                 ->with('success', 'Pembayaran berhasil dicatat');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -77,11 +83,16 @@ class PembayaranController extends Controller
     public function show(Pembayaran $pembayaran)
     {
         $pembayaran->load(['siswa', 'jenisPembayaran', 'user', 'jurnal.details.akun']);
-        return view('admin.pembayaran.show', compact('pembayaran'));
+        return view('pembayaran.show', compact('pembayaran'));
     }
 
     public function destroy(Pembayaran $pembayaran)
     {
+        // Check authorization
+        if (!auth()->user()->isAdmin() && !auth()->user()->isBendahara() && !auth()->user()->isTu()) {
+            abort(403, 'Anda tidak memiliki akses untuk menghapus pembayaran');
+        }
+
         DB::beginTransaction();
         try {
             // Hapus jurnal terkait
@@ -94,7 +105,7 @@ class PembayaranController extends Controller
             
             DB::commit();
 
-            return redirect()->route('admin.pembayaran.index')
+            return redirect()->route($this->getRoutePrefix() . '.pembayaran.index')
                 ->with('success', 'Pembayaran berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -105,8 +116,8 @@ class PembayaranController extends Controller
     private function createJurnalPembayaran(Pembayaran $pembayaran)
     {
         // Cari akun kas dan pendapatan SPP
-        $akunKas = Akun::where('kode_akun', '1-1-1')->first(); // Sesuaikan kode akun
-        $akunPendapatan = Akun::where('kode_akun', '4-1-1')->first(); // Sesuaikan kode akun
+        $akunKas = Akun::where('kode_akun', '1-101')->first(); // Sesuaikan kode akun
+        $akunPendapatan = Akun::where('kode_akun', '4-101')->first(); // Sesuaikan kode akun
 
         if (!$akunKas || !$akunPendapatan) {
             throw new \Exception('Akun kas atau pendapatan tidak ditemukan');

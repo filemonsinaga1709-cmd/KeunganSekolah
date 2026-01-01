@@ -49,6 +49,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/neraca-saldo', [LaporanController::class, 'neracaSaldo'])->name('neraca-saldo');
         Route::get('/laba-rugi', [LaporanController::class, 'labaRugi'])->name('laba-rugi');
         Route::get('/kas', [LaporanController::class, 'laporanKas'])->name('kas');
+        
+        // Print routes
+        Route::get('/kas/print', [LaporanController::class, 'printLaporanKas'])->name('kas.print');
+        Route::get('/laba-rugi/print', [LaporanController::class, 'printLabaRugi'])->name('laba-rugi.print');
+        Route::get('/neraca-saldo/print', [LaporanController::class, 'printNeracaSaldo'])->name('neraca-saldo.print');
     });
 });
 
@@ -76,6 +81,11 @@ Route::middleware(['auth', 'bendahara'])->prefix('bendahara')->name('bendahara.'
         Route::get('/neraca-saldo', [LaporanController::class, 'neracaSaldo'])->name('neraca-saldo');
         Route::get('/laba-rugi', [LaporanController::class, 'labaRugi'])->name('laba-rugi');
         Route::get('/kas', [LaporanController::class, 'laporanKas'])->name('kas');
+        
+        // Print routes
+        Route::get('/kas/print', [LaporanController::class, 'printLaporanKas'])->name('kas.print');
+        Route::get('/laba-rugi/print', [LaporanController::class, 'printLabaRugi'])->name('laba-rugi.print');
+        Route::get('/neraca-saldo/print', [LaporanController::class, 'printNeracaSaldo'])->name('neraca-saldo.print');
     });
 });
 
@@ -97,6 +107,9 @@ Route::middleware(['auth', 'tu'])->prefix('tu')->name('tu.')->group(function () 
     Route::prefix('laporan')->name('laporan.')->group(function () {
         Route::get('/', [LaporanController::class, 'index'])->name('index');
         Route::get('/kas', [LaporanController::class, 'laporanKas'])->name('kas');
+        
+        // Print route
+        Route::get('/kas/print', [LaporanController::class, 'printLaporanKas'])->name('kas.print');
     });
 });
 
@@ -120,6 +133,11 @@ Route::middleware(['auth', 'kepala_sekolah'])->prefix('kepala-sekolah')->name('k
         Route::get('/neraca-saldo', [LaporanController::class, 'neracaSaldo'])->name('neraca-saldo');
         Route::get('/laba-rugi', [LaporanController::class, 'labaRugi'])->name('laba-rugi');
         Route::get('/kas', [LaporanController::class, 'laporanKas'])->name('kas');
+        
+        // Print routes
+        Route::get('/kas/print', [LaporanController::class, 'printLaporanKas'])->name('kas.print');
+        Route::get('/laba-rugi/print', [LaporanController::class, 'printLabaRugi'])->name('laba-rugi.print');
+        Route::get('/neraca-saldo/print', [LaporanController::class, 'printNeracaSaldo'])->name('neraca-saldo.print');
     });
 });
 

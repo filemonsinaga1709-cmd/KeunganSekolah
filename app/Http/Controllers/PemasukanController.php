@@ -139,7 +139,7 @@ class PemasukanController extends Controller
 
     private function createJurnalPemasukan(Pemasukan $pemasukan)
     {
-        $akunKas = Akun::where('kode_akun', '1-1-1')->first();
+        $akunKas = Akun::where('kode_akun', '1-101')->first();
 
         if (!$akunKas) {
             throw new \Exception('Akun kas tidak ditemukan');

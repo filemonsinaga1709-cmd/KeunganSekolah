@@ -2,12 +2,15 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Data Pembayaran Siswa</h2>
-            <a href="{{ route('admin.pembayaran.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
+            
+            @if(auth()->user()->isAdmin() || auth()->user()->isBendahara() || auth()->user()->isTu())
+            <a href="{{ route(auth()->user()->route_prefix . '.pembayaran.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
                 Tambah Pembayaran
             </a>
+            @endif
         </div>
     </x-slot>
 
@@ -27,7 +30,7 @@
                     </div>
                     <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">Cari</button>
                     @if(request('search') || request('tanggal_mulai'))
-                        <a href="{{ route('admin.pembayaran.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition">Reset</a>
+                        <a href="{{ route(auth()->user()->route_prefix . '.pembayaran.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition">Reset</a>
                     @endif
                 </form>
             </div>
@@ -81,13 +84,15 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                     <div class="flex items-center justify-center space-x-2">
-                                        <a href="{{ route('admin.pembayaran.print', $pembayaran) }}" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-md transition">
+                                        <a href="{{ route(auth()->user()->route_prefix . '.pembayaran.print', $pembayaran) }}" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-md transition">
                                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                             </svg>
                                             Print
                                         </a>
-                                        <form action="{{ route('admin.pembayaran.destroy', $pembayaran) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pembayaran ini?');">
+                                        
+                                        @if(auth()->user()->isAdmin() || auth()->user()->isBendahara() || auth()->user()->isTu())
+                                        <form action="{{ route(auth()->user()->route_prefix . '.pembayaran.destroy', $pembayaran) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pembayaran ini?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-md transition">
@@ -97,6 +102,7 @@
                                                 Hapus
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
