@@ -2,12 +2,14 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Jenis Pembayaran</h2>
+             @if(auth()->user()->isAdmin())
             <a href="{{ route('admin.jenis-pembayaran.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
                 Tambah Jenis Pembayaran
             </a>
+            @endif
         </div>
     </x-slot>
 
@@ -21,7 +23,9 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Jenis Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nominal</th>
+                                 @if(auth()->user()->isAdmin())
                                 <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -38,6 +42,9 @@
                                         <span class="text-sm text-gray-400">Tidak ditentukan</span>
                                     @endif
                                 </td>
+
+                                @if(auth()->user()->isAdmin())
+
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                     <div class="flex items-center justify-center space-x-2">
                                         <a href="{{ route('admin.jenis-pembayaran.edit', $jenis) }}" class="inline-flex items-center px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium rounded-md transition">
@@ -58,6 +65,7 @@
                                         </form>
                                     </div>
                                 </td>
+                                @endif
                             </tr>
                             @empty
                             <tr>

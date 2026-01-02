@@ -88,6 +88,9 @@
                                 <x-dropdown-link :href="route(auth()->user()->role . '.jurnal.index')">
                                     {{ __('Jurnal Umum') }}
                                 </x-dropdown-link>
+                                 <x-dropdown-link :href="route(auth()->user()->role . '.jenis-pembayaran.index')">
+                                    {{ __('Jenis Pembayaran') }}
+                                </x-dropdown-link>
                                 @endif
                             </x-slot>
                         </x-dropdown>

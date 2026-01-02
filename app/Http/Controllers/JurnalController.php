@@ -3,34 +3,39 @@
 namespace App\Http\Controllers;
 
 use App\Models\Jurnal;
-use App\Models\Akun;
 use App\Models\JurnalDetail;
+use App\Models\Akun;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class JurnalController extends Controller
 {
+    private function getRoutePrefix()
+    {
+        return str_replace('_', '-', auth()->user()->role);
+    }
+
     public function index(Request $request)
     {
         $query = Jurnal::with(['details.akun', 'user']);
+
+        if ($request->filled('search')) {
+            $query->where('keterangan', 'like', '%' . $request->search . '%');
+        }
 
         if ($request->filled('tanggal_mulai') && $request->filled('tanggal_akhir')) {
             $query->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir]);
         }
 
-        if ($request->filled('jenis')) {
-            $query->where('jenis', $request->jenis);
-        }
+        $jurnals = $query->latest('tanggal')->paginate(10);
 
-        $jurnals = $query->latest('tanggal')->paginate(15);
-
-        return view('admin.jurnal.index', compact('jurnals'));
+        return view('jurnal.index', compact('jurnals'));
     }
 
     public function create()
     {
-        $akuns = Akun::active()->get();
-        return view('admin.jurnal.create', compact('akuns'));
+        $akuns = Akun::where('is_active', true)->get();
+        return view('jurnal.create', compact('akuns'));
     }
 
     public function store(Request $request)
@@ -38,19 +43,18 @@ class JurnalController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'keterangan' => 'required|string',
-            'jenis' => 'required|in:umum,penyesuaian,penutup',
             'details' => 'required|array|min:2',
             'details.*.akun_id' => 'required|exists:akuns,id',
             'details.*.debit' => 'required|numeric|min:0',
             'details.*.kredit' => 'required|numeric|min:0',
         ]);
 
-        // Validasi balance debit = kredit
-        $totalDebit = collect($request->details)->sum('debit');
-        $totalKredit = collect($request->details)->sum('kredit');
+        // Validate debit = kredit
+        $totalDebit = collect($validated['details'])->sum('debit');
+        $totalKredit = collect($validated['details'])->sum('kredit');
 
         if ($totalDebit != $totalKredit) {
-            return back()->withErrors(['details' => 'Total debit dan kredit harus sama'])
+            return back()->withErrors(['details' => 'Total Debit harus sama dengan Total Kredit'])
                 ->withInput();
         }
 
@@ -59,25 +63,23 @@ class JurnalController extends Controller
             $jurnal = Jurnal::create([
                 'tanggal' => $validated['tanggal'],
                 'keterangan' => $validated['keterangan'],
-                'jenis' => $validated['jenis'],
+                'jenis' => 'umum',
                 'user_id' => auth()->id(),
             ]);
 
-            foreach ($request->details as $detail) {
-                if ($detail['debit'] > 0 || $detail['kredit'] > 0) {
-                    JurnalDetail::create([
-                        'jurnal_id' => $jurnal->id,
-                        'akun_id' => $detail['akun_id'],
-                        'debit' => $detail['debit'],
-                        'kredit' => $detail['kredit'],
-                    ]);
-                }
+            foreach ($validated['details'] as $detail) {
+                JurnalDetail::create([
+                    'jurnal_id' => $jurnal->id,
+                    'akun_id' => $detail['akun_id'],
+                    'debit' => $detail['debit'],
+                    'kredit' => $detail['kredit'],
+                ]);
             }
 
             DB::commit();
 
-            return redirect()->route('jurnal.index')
-                ->with('success', 'Jurnal berhasil dicatat');
+            return redirect()->route($this->getRoutePrefix() . '.jurnal.index')
+                ->with('success', 'Jurnal berhasil ditambahkan');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
@@ -88,13 +90,18 @@ class JurnalController extends Controller
     public function show(Jurnal $jurnal)
     {
         $jurnal->load(['details.akun', 'user']);
-        return view('admin.jurnal.show', compact('jurnal'));
+        return view('jurnal.show', compact('jurnal'));
     }
 
     public function destroy(Jurnal $jurnal)
     {
-        // Cek apakah jurnal adalah hasil auto-generate
-        if ($jurnal->ref_tipe && $jurnal->ref_id) {
+        // Check authorization
+        if (!auth()->user()->isAdmin() && !auth()->user()->isBendahara()) {
+            abort(403, 'Anda tidak memiliki akses untuk menghapus jurnal');
+        }
+
+        // Prevent deleting auto-generated jurnal
+        if ($jurnal->ref_tipe) {
             return back()->with('error', 'Jurnal otomatis tidak dapat dihapus. Hapus transaksi aslinya.');
         }
 
@@ -105,7 +112,7 @@ class JurnalController extends Controller
             
             DB::commit();
 
-            return redirect()->route('jurnal.index')
+            return redirect()->route($this->getRoutePrefix() . '.jurnal.index')
                 ->with('success', 'Jurnal berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();

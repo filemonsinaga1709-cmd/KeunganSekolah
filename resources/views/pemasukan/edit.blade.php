@@ -13,7 +13,7 @@
                     <h3 class="text-lg font-semibold text-white">Form Edit Pemasukan</h3>
                 </div>
 
-                <form action="{{ route('admin.pemasukan.update', $pemasukan) }}" method="POST" class="p-6 space-y-6">
+                <form action="{{ route(auth()->user()->route_prefix . '.pemasukan.update', $pemasukan) }}" method="POST" class="p-6 space-y-6">
                     @csrf
                     @method('PUT')
 
@@ -56,7 +56,7 @@
                     </div>
 
                     <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-                        <a href="{{ route('admin.pemasukan.index') }}" class="px-4 py-2 bg-white border border-gray-300 rounded-md text-xs text-gray-700 uppercase font-semibold hover:bg-gray-50 transition">Batal</a>
+                        <a href="{{ route(auth()->user()->route_prefix . '.pemasukan.index') }}" class="px-4 py-2 bg-white border border-gray-300 rounded-md text-xs text-gray-700 uppercase font-semibold hover:bg-gray-50 transition">Batal</a>
                         <button type="submit" class="px-6 py-2 bg-yellow-500 border border-transparent rounded-md text-xs text-white uppercase font-semibold hover:bg-yellow-600 transition">Perbarui</button>
                     </div>
                 </form>

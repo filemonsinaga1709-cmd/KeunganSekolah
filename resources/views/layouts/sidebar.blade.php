@@ -67,7 +67,7 @@
                 Data Siswa
             </a>
 
-            @if(auth()->user()->isAdmin())
+            @if(auth()->user()->isAdmin() || auth()->user()->isBendahara())
             <a href="{{ route(auth()->user()->role . '.jenis-pembayaran.index') }}" 
                class="flex items-center px-4 py-3 text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white transition-colors {{ request()->routeIs('*.jenis-pembayaran.*') ? 'bg-gray-700 text-white' : '' }}">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

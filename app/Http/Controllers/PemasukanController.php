@@ -11,13 +11,19 @@ use Illuminate\Support\Facades\DB;
 
 class PemasukanController extends Controller
 {
+    private function getRoutePrefix()
+    {
+        return str_replace('_', '-', auth()->user()->role);
+    }
+
     public function index(Request $request)
     {
-        $query = Pemasukan::with(['akun', 'user']);
+        $query = Pemasukan::with('user');
 
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('no_transaksi', 'like', '%' . $request->search . '%')
+                  ->orWhere('kategori', 'like', '%' . $request->search . '%')
                   ->orWhere('keterangan', 'like', '%' . $request->search . '%');
             });
         }
@@ -27,25 +33,30 @@ class PemasukanController extends Controller
         }
 
         $pemasukans = $query->latest('tanggal')->paginate(10);
-        $totalPemasukan = $query->sum('jumlah');
+        $totalPemasukan = $pemasukans->sum('jumlah'); // Fix: use collection sum
 
-        return view('admin.pemasukan.index', compact('pemasukans', 'totalPemasukan'));
+        return view('pemasukan.index', compact('pemasukans', 'totalPemasukan'));
     }
 
     public function create()
     {
-        $akuns = Akun::where('tipe_akun', 'pendapatan')->active()->get();
-        return view('admin.pemasukan.create', compact('akuns'));
+        // Pass akuns untuk dropdown
+        $akuns = Akun::where('tipe_akun', 'pendapatan')
+                     ->where('is_active', true)
+                     ->orderBy('kode_akun')
+                     ->get();
+        
+        return view('pemasukan.create', compact('akuns'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'kategori' => 'nullable|string|max:255',
-            'keterangan' => 'required|string',
+            'kategori' => 'required|string|max:255',
             'jumlah' => 'required|numeric|min:0',
-            'akun_id' => 'nullable|exists:akuns,id',
+            'keterangan' => 'nullable|string',
+            'akun_id' => 'nullable|exists:akuns,id', // Optional akun selection
         ]);
 
         DB::beginTransaction();
@@ -54,13 +65,11 @@ class PemasukanController extends Controller
             $pemasukan = Pemasukan::create($validated);
 
             // Auto create jurnal
-            if ($pemasukan->akun_id) {
-                $this->createJurnalPemasukan($pemasukan);
-            }
+            $this->createJurnalPemasukan($pemasukan, $request->akun_id);
 
             DB::commit();
 
-            return redirect()->route('admin.pemasukan.index')
+            return redirect()->route($this->getRoutePrefix() . '.pemasukan.index')
                 ->with('success', 'Pemasukan berhasil dicatat');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -71,43 +80,47 @@ class PemasukanController extends Controller
 
     public function show(Pemasukan $pemasukan)
     {
-        $pemasukan->load(['akun', 'user', 'jurnal.details.akun']);
-        return view('admin.pemasukan.show', compact('pemasukan'));
+        $pemasukan->load(['user', 'jurnal.details.akun']);
+        return view('pemasukan.show', compact('pemasukan'));
     }
 
     public function edit(Pemasukan $pemasukan)
     {
-        $akuns = Akun::where('tipe_akun', 'pendapatan')->active()->get();
-        return view('admin.pemasukan.edit', compact('pemasukan', 'akuns'));
+        // Pass akuns untuk dropdown
+        $akuns = Akun::where('tipe_akun', 'pendapatan')
+                     ->where('is_active', true)
+                     ->orderBy('kode_akun')
+                     ->get();
+        
+        return view('pemasukan.edit', compact('pemasukan', 'akuns'));
     }
 
     public function update(Request $request, Pemasukan $pemasukan)
     {
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'kategori' => 'nullable|string|max:255',
-            'keterangan' => 'required|string',
+            'kategori' => 'required|string|max:255',
             'jumlah' => 'required|numeric|min:0',
+            'keterangan' => 'nullable|string',
             'akun_id' => 'nullable|exists:akuns,id',
         ]);
 
         DB::beginTransaction();
         try {
-            $pemasukan->update($validated);
-
-            // Update atau create jurnal
+            // Delete old jurnal
             if ($pemasukan->jurnal) {
                 $pemasukan->jurnal->details()->delete();
                 $pemasukan->jurnal->delete();
             }
 
-            if ($pemasukan->akun_id) {
-                $this->createJurnalPemasukan($pemasukan);
-            }
+            $pemasukan->update($validated);
+
+            // Create new jurnal
+            $this->createJurnalPemasukan($pemasukan, $request->akun_id);
 
             DB::commit();
 
-            return redirect()->route('admin.pemasukan.index')
+            return redirect()->route($this->getRoutePrefix() . '.pemasukan.index')
                 ->with('success', 'Pemasukan berhasil diperbarui');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -118,8 +131,14 @@ class PemasukanController extends Controller
 
     public function destroy(Pemasukan $pemasukan)
     {
+        // Check authorization
+        if (!auth()->user()->isAdmin() && !auth()->user()->isBendahara()) {
+            abort(403, 'Anda tidak memiliki akses untuk menghapus pemasukan');
+        }
+
         DB::beginTransaction();
         try {
+            // Delete jurnal
             if ($pemasukan->jurnal) {
                 $pemasukan->jurnal->details()->delete();
                 $pemasukan->jurnal->delete();
@@ -129,7 +148,7 @@ class PemasukanController extends Controller
             
             DB::commit();
 
-            return redirect()->route('admin.pemasukan.index')
+            return redirect()->route($this->getRoutePrefix() . '.pemasukan.index')
                 ->with('success', 'Pemasukan berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -137,17 +156,28 @@ class PemasukanController extends Controller
         }
     }
 
-    private function createJurnalPemasukan(Pemasukan $pemasukan)
+    private function createJurnalPemasukan(Pemasukan $pemasukan, $selectedAkunId = null)
     {
         $akunKas = Akun::where('kode_akun', '1-101')->first();
+        
+        // Use selected akun or default to 4-999
+        if ($selectedAkunId) {
+            $akunPendapatan = Akun::find($selectedAkunId);
+        } else {
+            $akunPendapatan = Akun::where('kode_akun', '4-999')->first(); // Pendapatan Lain-lain
+        }
 
         if (!$akunKas) {
-            throw new \Exception('Akun kas tidak ditemukan');
+            throw new \Exception('Akun Kas (1-101) tidak ditemukan');
+        }
+        
+        if (!$akunPendapatan) {
+            throw new \Exception('Akun Pendapatan tidak ditemukan');
         }
 
         $jurnal = Jurnal::create([
             'tanggal' => $pemasukan->tanggal,
-            'keterangan' => $pemasukan->keterangan,
+            'keterangan' => "Pemasukan {$pemasukan->kategori} - {$pemasukan->keterangan}",
             'jenis' => 'umum',
             'ref_tipe' => 'pemasukan',
             'ref_id' => $pemasukan->id,
@@ -165,7 +195,7 @@ class PemasukanController extends Controller
         // Kredit Pendapatan
         JurnalDetail::create([
             'jurnal_id' => $jurnal->id,
-            'akun_id' => $pemasukan->akun_id,
+            'akun_id' => $akunPendapatan->id,
             'debit' => 0,
             'kredit' => $pemasukan->jumlah,
         ]);

@@ -13,7 +13,7 @@
                     <h3 class="text-lg font-semibold text-white">Form Tambah Pemasukan</h3>
                 </div>
 
-                <form action="{{ route('admin.pemasukan.store') }}" method="POST" class="p-6 space-y-6">
+                <form action="{{ route(auth()->user()->route_prefix . '.pemasukan.store') }}" method="POST" class="p-6 space-y-6">
                     @csrf
 
                     <div>

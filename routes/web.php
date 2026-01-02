@@ -61,13 +61,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::middleware(['auth', 'bendahara'])->prefix('bendahara')->name('bendahara.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    // Master Data (view only siswa)
+    // Master Data (view only)
     Route::get('siswa', [SiswaController::class, 'index'])->name('siswa.index');
     Route::get('siswa/{siswa}', [SiswaController::class, 'show'])->name('siswa.show');
     Route::get('jenis-pembayaran', [JenisPembayaranController::class, 'index'])->name('jenis-pembayaran.index');
     
-    // Full access transaksi
-    Route::resource('akun', AkunController::class);
+    // View only akun (untuk referensi saat input transaksi)
+    Route::get('akun', [AkunController::class, 'index'])->name('akun.index');
+    Route::get('akun/{akun}', [AkunController::class, 'show'])->name('akun.show');
+    
+    // Full CRUD transaksi
     Route::resource('pembayaran', PembayaranController::class);
     Route::get('pembayaran/{pembayaran}/print', [PembayaranController::class, 'print'])->name('pembayaran.print');
     Route::resource('pemasukan', PemasukanController::class);
@@ -125,6 +128,8 @@ Route::middleware(['auth', 'kepala_sekolah'])->prefix('kepala-sekolah')->name('k
     Route::get('pemasukan', [PemasukanController::class, 'index'])->name('pemasukan.index');
     Route::get('pengeluaran', [PengeluaranController::class, 'index'])->name('pengeluaran.index');
     Route::get('jurnal', [JurnalController::class, 'index'])->name('jurnal.index');
+    Route::get('akun', [AkunController::class, 'index'])->name('akun.index');
+    Route::get('akun/{akun}', [AkunController::class, 'show'])->name('akun.show');
     
     // Laporan
     Route::prefix('laporan')->name('laporan.')->group(function () {
