@@ -33,14 +33,20 @@ class PengeluaranController extends Controller
         }
 
         $pengeluarans = $query->latest('tanggal')->paginate(10);
-        $totalPengeluaran = $query->sum('jumlah');
+        $totalPengeluaran = $pengeluarans->sum('jumlah'); // Fix: use collection sum
 
         return view('pengeluaran.index', compact('pengeluarans', 'totalPengeluaran'));
     }
 
     public function create()
     {
-        return view('pengeluaran.create');
+        // Pass akuns untuk dropdown - hanya akun beban yang aktif
+        $akuns = Akun::where('tipe_akun', 'beban')
+                     ->where('is_active', true)
+                     ->orderBy('kode_akun')
+                     ->get();
+        
+        return view('pengeluaran.create', compact('akuns'));
     }
 
     public function store(Request $request)
@@ -50,6 +56,7 @@ class PengeluaranController extends Controller
             'kategori' => 'required|string|max:255',
             'jumlah' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
+            'akun_id' => 'nullable|exists:akuns,id', // Optional akun selection
         ]);
 
         DB::beginTransaction();
@@ -58,7 +65,7 @@ class PengeluaranController extends Controller
             $pengeluaran = Pengeluaran::create($validated);
 
             // Auto create jurnal
-            $this->createJurnalPengeluaran($pengeluaran);
+            $this->createJurnalPengeluaran($pengeluaran, $request->akun_id);
 
             DB::commit();
 
@@ -79,7 +86,13 @@ class PengeluaranController extends Controller
 
     public function edit(Pengeluaran $pengeluaran)
     {
-        return view('pengeluaran.edit', compact('pengeluaran'));
+        // Pass akuns untuk dropdown
+        $akuns = Akun::where('tipe_akun', 'beban')
+                     ->where('is_active', true)
+                     ->orderBy('kode_akun')
+                     ->get();
+        
+        return view('pengeluaran.edit', compact('pengeluaran', 'akuns'));
     }
 
     public function update(Request $request, Pengeluaran $pengeluaran)
@@ -89,6 +102,7 @@ class PengeluaranController extends Controller
             'kategori' => 'required|string|max:255',
             'jumlah' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
+            'akun_id' => 'nullable|exists:akuns,id',
         ]);
 
         DB::beginTransaction();
@@ -102,7 +116,7 @@ class PengeluaranController extends Controller
             $pengeluaran->update($validated);
 
             // Create new jurnal
-            $this->createJurnalPengeluaran($pengeluaran);
+            $this->createJurnalPengeluaran($pengeluaran, $request->akun_id);
 
             DB::commit();
 
@@ -142,18 +156,28 @@ class PengeluaranController extends Controller
         }
     }
 
-    private function createJurnalPengeluaran(Pengeluaran $pengeluaran)
+    private function createJurnalPengeluaran(Pengeluaran $pengeluaran, $selectedAkunId = null)
     {
         $akunKas = Akun::where('kode_akun', '1-101')->first();
-        $akunBeban = Akun::where('kode_akun', '5-999')->first(); // Beban Lain-lain
+        
+        // Use selected akun or default to 5-999
+        if ($selectedAkunId) {
+            $akunBeban = Akun::find($selectedAkunId);
+        } else {
+            $akunBeban = Akun::where('kode_akun', '5-999')->first(); // Beban Lain-lain
+        }
 
-        if (!$akunKas || !$akunBeban) {
-            throw new \Exception('Akun kas atau beban tidak ditemukan');
+        if (!$akunKas) {
+            throw new \Exception('Akun Kas (1-101) tidak ditemukan');
+        }
+        
+        if (!$akunBeban) {
+            throw new \Exception('Akun Beban tidak ditemukan');
         }
 
         $jurnal = Jurnal::create([
             'tanggal' => $pengeluaran->tanggal,
-            'keterangan' => "Pengeluaran {$pengeluaran->kategori}",
+            'keterangan' => "Pengeluaran {$pengeluaran->kategori} - {$pengeluaran->keterangan}",
             'jenis' => 'umum',
             'ref_tipe' => 'pengeluaran',
             'ref_id' => $pengeluaran->id,
@@ -176,4 +200,4 @@ class PengeluaranController extends Controller
             'kredit' => $pengeluaran->jumlah,
         ]);
     }
-}
+} 

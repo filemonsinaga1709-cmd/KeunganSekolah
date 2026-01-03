@@ -13,9 +13,9 @@
                     <h3 class="text-lg font-semibold text-white">Form Entry Jurnal</h3>
                 </div>
 
-                <form action="{{ route('admin.jurnal.store') }}" method="POST" id="jurnalForm" class="p-6">
+                <form action="{{ route(auth()->user()->route_prefix . '.jurnal.store') }}" method="POST" id="jurnalForm" class="p-6">
                     @csrf
-
+                                       
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div>
                             <label for="tanggal" class="block text-sm font-medium text-gray-700 mb-2">Tanggal <span class="text-red-500">*</span></label>

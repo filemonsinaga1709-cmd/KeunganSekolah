@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Data Pengeluaran</h2>
-            <a href="{{ route('admin.pengeluaran.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
+            <a href="{{ route(auth()->user()->route_prefix . '.pengeluaran.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
@@ -27,7 +27,7 @@
                     </div>
                     <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">Cari</button>
                     @if(request()->hasAny(['search', 'tanggal_mulai']))
-                        <a href="{{ route('admin.pengeluaran.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition">Reset</a>
+                        <a href="{{ route(auth()->user()->route_prefix . '.pengeluaran.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition">Reset</a>
                     @endif
                 </form>
             </div>
@@ -75,14 +75,16 @@
                                 <td class="px-6 py-4 text-sm text-gray-500">{{ $pengeluaran->akun->nama_akun ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-red-600">Rp {{ number_format($pengeluaran->jumlah, 0, ',', '.') }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
+                                     @if(auth()->user()->isAdmin() || auth()->user()->isBendahara())
                                     <div class="flex items-center justify-center space-x-2">
-                                        <a href="{{ route('admin.pengeluaran.edit', $pengeluaran) }}" class="inline-flex items-center px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium rounded-md transition">Edit</a>
-                                        <form action="{{ route('admin.pengeluaran.destroy', $pengeluaran) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus pengeluaran ini?');">
+                                        <a href="{{ route(auth()->user()->route_prefix . '.pengeluaran.edit', $pengeluaran) }}" class="inline-flex items-center px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium rounded-md transition">Edit</a>
+                                        <form action="{{ route(auth()->user()->route_prefix . '.pengeluaran.destroy', $pengeluaran) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus pengeluaran ini?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-md transition">Hapus</button>
                                         </form>
                                     </div>
+                                    @endif
                                 </td>
                             </tr>
                             @empty

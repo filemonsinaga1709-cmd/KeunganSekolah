@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Jurnal Umum</h2>
-            <a href="{{ route('admin.jurnal.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
+            <a href="{{ route(auth()->user()->route_prefix . '.jurnal.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
@@ -83,9 +83,9 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
                                     <div class="flex items-center justify-center space-x-2">
-                                        <a href="{{ route('admin.jurnal.show', $jurnal) }}" class="inline-flex items-center px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-md transition">Detail</a>
+                                        <a href="{{ route(auth()->user()->route_prefix . '.jurnal.show', $jurnal) }}" class="inline-flex items-center px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-md transition">Detail</a>
                                         @if(!$jurnal->ref_tipe)
-                                            <form action="{{ route('admin.jurnal.destroy', $jurnal) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus jurnal ini?');">
+                                            <form action="{{ route(auth()->user()->route_prefix . '.jurnal.destroy', $jurnal) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus jurnal ini?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-md transition">Hapus</button>

@@ -70,7 +70,7 @@ class Pengeluaran extends Model
 
         static::creating(function ($model) {
             if (empty($model->no_transaksi)) {
-                $model->no_transaksi = 'KLR-' . date('Ymd') . '-' . str_pad(static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+                $model->no_transaksi = 'OUT-' . date('Ymd') . '-' . str_pad(static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
             }
         });
 
