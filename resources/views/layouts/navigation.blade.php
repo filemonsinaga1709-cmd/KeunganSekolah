@@ -4,14 +4,14 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route(auth()->user()->role . '.dashboard') }}" class="text-xl font-bold text-gray-800">
+                    <a href="{{ route(auth()->user()->route_prefix . '.dashboard') }}" class="text-xl font-bold text-gray-800">
                         SIKAS
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route(auth()->user()->role . '.dashboard')" :active="request()->routeIs('*.dashboard')">
+                    <x-nav-link :href="route(auth()->user()->route_prefix . '.dashboard')" :active="request()->routeIs('*.dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
@@ -31,18 +31,16 @@
                             </x-slot>
 
                             <x-slot name="content">
-                                @if(auth()->user()->isAdmin() || auth()->user()->isBendahara())
-                                <x-dropdown-link :href="route(auth()->user()->role . '.akun.index')">
+                                <x-dropdown-link :href="route(auth()->user()->route_prefix . '.akun.index')">
                                     {{ __('Chart of Account') }}
                                 </x-dropdown-link>
-                                @endif
                                 
-                                <x-dropdown-link :href="route(auth()->user()->role . '.siswa.index')">
+                                <x-dropdown-link :href="route(auth()->user()->route_prefix . '.siswa.index')">
                                     {{ __('Data Siswa') }}
                                 </x-dropdown-link>
                                 
                                 @if(auth()->user()->isAdmin())
-                                <x-dropdown-link :href="route(auth()->user()->role . '.jenis-pembayaran.index')">
+                                <x-dropdown-link :href="route(auth()->user()->route_prefix . '.jenis-pembayaran.index')">
                                     {{ __('Jenis Pembayaran') }}
                                 </x-dropdown-link>
                                 @endif
@@ -74,22 +72,19 @@
                             </x-slot>
 
                             <x-slot name="content">
-                                <x-dropdown-link :href="route(auth()->user()->role . '.pembayaran.index')">
+                                <x-dropdown-link :href="route(auth()->user()->route_prefix . '.pembayaran.index')">
                                     {{ __('Pembayaran SPP') }}
                                 </x-dropdown-link>
                                 
                                 @if(auth()->user()->isAdmin() || auth()->user()->isBendahara())
-                                <x-dropdown-link :href="route(auth()->user()->role . '.pemasukan.index')">
+                                <x-dropdown-link :href="route(auth()->user()->route_prefix . '.pemasukan.index')">
                                     {{ __('Pemasukan Lain') }}
                                 </x-dropdown-link>
-                                <x-dropdown-link :href="route(auth()->user()->role . '.pengeluaran.index')">
+                                <x-dropdown-link :href="route(auth()->user()->route_prefix . '.pengeluaran.index')">
                                     {{ __('Pengeluaran') }}
                                 </x-dropdown-link>
-                                <x-dropdown-link :href="route(auth()->user()->role . '.jurnal.index')">
+                                <x-dropdown-link :href="route(auth()->user()->route_prefix . '.jurnal.index')">
                                     {{ __('Jurnal Umum') }}
-                                </x-dropdown-link>
-                                 <x-dropdown-link :href="route(auth()->user()->role . '.jenis-pembayaran.index')">
-                                    {{ __('Jenis Pembayaran') }}
                                 </x-dropdown-link>
                                 @endif
                             </x-slot>
@@ -98,7 +93,7 @@
                     @endif
 
                     <!-- Laporan -->
-                    <x-nav-link :href="route(auth()->user()->role . '.laporan.index')" :active="request()->routeIs('*.laporan.*')">
+                    <x-nav-link :href="route(auth()->user()->route_prefix . '.laporan.index')" :active="request()->routeIs('*.laporan.*')">
                         {{ __('Laporan') }}
                     </x-nav-link>
 
@@ -161,7 +156,7 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route(auth()->user()->role . '.dashboard')" :active="request()->routeIs('*.dashboard')">
+            <x-responsive-nav-link :href="route(auth()->user()->route_prefix . '.dashboard')" :active="request()->routeIs('*.dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
         </div>

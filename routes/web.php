@@ -123,11 +123,17 @@ Route::middleware(['auth', 'kepala_sekolah'])->prefix('kepala-sekolah')->name('k
     // View only
     Route::get('siswa', [SiswaController::class, 'index'])->name('siswa.index');
     Route::get('siswa/{siswa}', [SiswaController::class, 'show'])->name('siswa.show');
+    
     Route::get('pembayaran', [PembayaranController::class, 'index'])->name('pembayaran.index');
     Route::get('pembayaran/{pembayaran}', [PembayaranController::class, 'show'])->name('pembayaran.show');
+    Route::get('pembayaran/{pembayaran}/print', [PembayaranController::class, 'print'])->name('pembayaran.print');
+    
     Route::get('pemasukan', [PemasukanController::class, 'index'])->name('pemasukan.index');
     Route::get('pengeluaran', [PengeluaranController::class, 'index'])->name('pengeluaran.index');
+    
     Route::get('jurnal', [JurnalController::class, 'index'])->name('jurnal.index');
+    Route::get('jurnal/{jurnal}', [JurnalController::class, 'show'])->name('jurnal.show'); // ADD THIS
+    
     Route::get('akun', [AkunController::class, 'index'])->name('akun.index');
     Route::get('akun/{akun}', [AkunController::class, 'show'])->name('akun.show');
     
