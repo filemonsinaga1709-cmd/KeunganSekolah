@@ -9,13 +9,13 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             <!-- Header dengan Tombol Tambah (hanya Admin & TU) -->
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
                 <h3 class="text-2xl font-bold text-gray-900">Daftar Siswa</h3>
                 
                 @if(auth()->user()->isAdmin() || auth()->user()->isTu())
                 <!-- Tombol Tambah - Hanya Admin & TU -->
                 <a href="{{ route(auth()->user()->route_prefix . '.siswa.create') }}" 
-                   class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg flex items-center">
+                   class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg inline-flex items-center w-fit">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
@@ -26,6 +26,7 @@
 
             <!-- Table -->
             <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -99,6 +100,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- Pagination -->

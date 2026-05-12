@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+
     public function run(): void
     {
         $users = [
@@ -31,6 +29,12 @@ class UserSeeder extends Seeder
                 'email' => 'kepsek@sekolah.com',
                 'password' => Hash::make('kepsek123'),
                 'role' => 'kepala_sekolah',
+            ],
+               [
+                'name' => 'Admin',
+                'email' => 'admin@sekolah.com',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
             ],
         ];
 
