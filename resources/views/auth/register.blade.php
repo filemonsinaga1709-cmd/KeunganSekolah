@@ -77,15 +77,32 @@
                     </h1>
                 </div>
 
-                <div class="text-center mb-8">
-                    <div class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-                        </svg>
-                    </div>
-                    <h2 class="text-3xl font-bold text-white mb-2">Buat Akun Baru</h2>
-                    <p class="text-gray-300">Isi form di bawah untuk mendaftar</p>
-                </div>
+             <div class="text-center mb-8">
+    <div class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg">
+        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
+            </path>
+        </svg>
+    </div>
+
+    <h2 class="text-3xl font-bold text-white mb-2">
+        Buat Akun Baru
+    </h2>
+
+    <p class="text-gray-300">
+        Isi form di bawah untuk mendaftar
+    </p>
+</div>
+
+{{-- Pesan sukses --}}
+@if(session('success'))
+    <div class="mb-4 p-4 rounded-xl border border-green-500 bg-green-500/10 text-green-400 text-center">
+        {{ session('success') }}
+    </div>
+@endif
+
+<form method="POST" action="{{ route('register') }}" class="space-y-4">
 
                 <form method="POST" action="{{ route('register') }}" class="space-y-4">
                     @csrf

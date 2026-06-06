@@ -7,31 +7,27 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-900">
-    <!-- Background Pattern -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
         <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-3xl"></div>
         <div class="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-green-500/20 to-blue-500/20 rounded-full blur-3xl"></div>
     </div>
 
-    <!-- Content -->
     <div class="relative min-h-screen flex items-center justify-center p-4 py-20">
         <div class="max-w-6xl w-full grid md:grid-cols-2 gap-8 items-center">
             
-            <!-- Left Side - Info -->
             <div class="text-white space-y-6 hidden md:block">
                 <div class="space-y-4">
                     <h1 class="text-6xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                        SIKAS
+                        EduFinance Pro
                     </h1>
                     <p class="text-3xl font-semibold text-gray-200">
-                        Sistem Informasi Keuangan <br>& Administrasi Sekolah
+                        Smart School Financial Management System <br>
                     </p>
                     <p class="text-xl text-gray-400">
                         Platform modern untuk mengelola keuangan sekolah dengan mudah dan efisien
                     </p>
                 </div>
 
-                <!-- Features -->
                 <div class="space-y-4 pt-8">
                     <div class="flex items-center space-x-4 bg-white/5 backdrop-blur-lg rounded-xl p-4 border border-white/10">
                         <div class="bg-blue-500 rounded-lg p-3">
@@ -71,9 +67,7 @@
                 </div>
             </div>
 
-            <!-- Right Side - Login Card -->
             <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-white/20 shadow-2xl">
-                <!-- Mobile Logo -->
                 <div class="md:hidden text-center mb-6">
                     <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                         SIKAS
@@ -90,7 +84,6 @@
                     <p class="text-gray-300">Silakan login untuk melanjutkan</p>
                 </div>
 
-                <!-- Session Status -->
                 @if (session('status'))
                     <div class="mb-4 p-4 bg-green-500/20 border border-green-400/30 rounded-xl text-green-300 text-sm">
                         {{ session('status') }}
@@ -100,7 +93,6 @@
                 <form method="POST" action="{{ route('login') }}" class="space-y-4">
                     @csrf
 
-                    <!-- Email Address -->
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-200 mb-2">Email</label>
                         <input id="email" 
@@ -116,7 +108,6 @@
                         @enderror
                     </div>
 
-                    <!-- Password -->
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-200 mb-2">Password</label>
                         <input id="password" 
@@ -130,7 +121,6 @@
                         @enderror
                     </div>
 
-                    <!-- Remember Me & Forgot Password -->
                     <div class="flex items-center justify-between">
                         <label class="flex items-center">
                             <input type="checkbox" 
@@ -146,7 +136,6 @@
                         @endif
                     </div>
 
-                    <!-- Submit Button -->
                     <button type="submit" 
                             class="group relative w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,27 +147,21 @@
                         </svg>
                     </button>
 
-                    <!-- Register Link -->
-                    @if (Route::has('register'))
-                        <div class="text-center pt-4">
-                            <p class="text-gray-300 text-sm">
-                                Belum punya akun? 
-                                <a href="{{ route('register') }}" class="text-blue-400 hover:text-blue-300 font-semibold transition-colors">
-                                    Daftar sekarang
-                                </a>
-                            </p>
-                        </div>
-                    @endif
+                    <div class="text-center pt-4 border-t border-white/10 mt-4">
+                        <p class="text-gray-400 text-sm">
+                            Sistem dikembangkan oleh 
+                            <a href="{{ route('developer') }}" class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent font-bold hover:from-blue-300 hover:to-purple-300 transition-all duration-300 inline-flex items-center space-x-1">
+                                <span>Developer Profile</span>
+                            </a>
+                        </p>
+                    </div>
                 </form>
-
-                <!-- Demo Info Box -->
                
             </div>
 
         </div>
     </div>
 
-    <!-- Footer -->
     <div class="relative py-6">
         <p class="text-center text-gray-500 text-sm">
             &copy; {{ date('Y') }} SIKAS - Sistem Keuangan Sekolah. All rights reserved.

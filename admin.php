@@ -157,5 +157,8 @@ Route::get('/developer', function () {
     return view('developer');
 })->name('developer');
 
+event(new Registered($user));
 
+return redirect()->route('login')
+    ->with('success', 'Registrasi berhasil. Silakan login.');
 require __DIR__.'/auth.php';
